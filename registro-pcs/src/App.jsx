@@ -4,9 +4,9 @@ import Equipos from "./componentes/Equipos/equipos";
 
 function App() {
   return (
-    <div>
+    <>
       <Equipos />
-    </div>
+    </>
   );
 }
 

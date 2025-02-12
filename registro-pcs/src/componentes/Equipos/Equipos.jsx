@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { getEquipos, addEquipo, updateEquipo, deleteEquipo } from "../../api/api"; // Importa las funciones de la API
+import { getEquipos, addEquipo, updateEquipo, deleteEquipo, getDirecciones, getMarcas } from "../../api/api"; // Importa las funciones de la API
 import {
   Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Paper,
   TablePagination, TableSortLabel, Typography, TextField, Button, Dialog,
-  DialogActions, DialogContent, DialogTitle, IconButton, Box
+  DialogActions, DialogContent, DialogTitle, IconButton, Box, MenuItem, Select, InputLabel, FormControl
 } from "@mui/material";
 import { Edit, Delete, Add } from "@mui/icons-material";
 import { ordenarPorIp } from "../../../ordenPorIP";
+import CustomSelect from "../../CustomSelect";
 
 const Equipos = () => {
   const [equipos, setEquipos] = useState([]);
+  const [direcciones, setDirecciones] = useState([]);
+  const [marcas, setMarcas] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [orderBy, setOrderBy] = useState("ip");
@@ -18,13 +21,15 @@ const Equipos = () => {
   const [editMode, setEditMode] = useState(false);
   const [currentId, setCurrentId] = useState(null);
   const [newEquipo, setNewEquipo] = useState({
-    host: "", ip: "", numeroSeriePC: "", numeroSerieMonitor: "",
-    persona: "", marcaPC: "", direccion: "", sector: ""
+    host: "", ip: "", seriePC: "", serieMonitor: "",
+    usuario: "", sector: "", direccion: "", marca: ""
   });
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     fetchEquipos();
+    fetchDirecciones();
+    fetchMarcas();
   }, []);
 
   const fetchEquipos = async () => {
@@ -33,6 +38,24 @@ const Equipos = () => {
       setEquipos(data);
     } catch (error) {
       console.error("Error al cargar los equipos", error);
+    }
+  };
+
+  const fetchDirecciones = async () => {
+    try {
+      const data = await getDirecciones();
+      setDirecciones(data.map(d => ({ id: d.id, nombre: d.direccion }))); // Asegura que la estructura es correcta
+    } catch (error) {
+      console.error("Error al cargar las direcciones", error);
+    }
+  };
+  
+  const fetchMarcas = async () => {
+    try {
+      const data = await getMarcas();
+      setMarcas(data.map(m => ({ id: m.id, nombre: m.marca }))); // Asegura que la estructura es correcta
+    } catch (error) {
+      console.error("Error al cargar las marcas", error);
     }
   };
 
@@ -69,8 +92,8 @@ const Equipos = () => {
       setEditMode(false);
       setCurrentId(null);
       setNewEquipo({
-        host: "", ip: "", numeroSeriePC: "", numeroSerieMonitor: "",
-        persona: "", marcaPC: "", direccion: "", sector: ""
+        host: "", ip: "", seriePC: "", serieMonitor: "",
+        usuario: "", sector: "", direccion: "", marca: ""
       });
     }
     setErrors({});
@@ -80,8 +103,8 @@ const Equipos = () => {
   const handleClose = () => {
     setOpen(false);
     setNewEquipo({
-      host: "", ip: "", numeroSeriePC: "", numeroSerieMonitor: "",
-      persona: "", marcaPC: "", direccion: "", sector: ""
+      host: "", ip: "", seriePC: "", serieMonitor: "",
+      usuario: "", sector: "", direccion: "", marca: ""
     });
     setErrors({});
   };
@@ -141,12 +164,12 @@ const Equipos = () => {
             <TableRow>
               {[{ key: "host", label: "Nombre" },
                 { key: "ip", label: "IP" },
-                { key: "numeroSeriePC", label: "N° Serie PC" },
-                { key: "numeroSerieMonitor", label: "N° Serie Monitor" },
-                { key: "persona", label: "Persona" },
-                { key: "marcaPC", label: "Marca PC" },
+                { key: "seriePC", label: "N° Serie PC" },
+                { key: "serieMonitor", label: "N° Serie Monitor" },
+                { key: "usuario", label: "Persona" },
+                { key: "sector", label: "Sector" },
                 { key: "direccion", label: "Dirección" },
-                { key: "sector", label: "Sector" }
+                { key: "marca", label: "Marca PC" }
               ].map((column) => (
                 <TableCell key={column.key} sx={{ fontWeight: "bold" }}>
                   <TableSortLabel
@@ -168,12 +191,12 @@ const Equipos = () => {
                 <TableRow key={equipo.id} hover>
                   <TableCell>{equipo.host}</TableCell>
                   <TableCell>{equipo.ip}</TableCell>
-                  <TableCell>{equipo.numeroSeriePC}</TableCell>
-                  <TableCell>{equipo.numeroSerieMonitor}</TableCell>
-                  <TableCell>{equipo.persona}</TableCell>
-                  <TableCell>{equipo.marcaPC}</TableCell>
-                  <TableCell>{equipo.direccion}</TableCell>
+                  <TableCell>{equipo.seriePc}</TableCell>
+                  <TableCell>{equipo.serieMonitor}</TableCell>
+                  <TableCell>{equipo.usuario}</TableCell>
                   <TableCell>{equipo.sector}</TableCell>
+                  <TableCell>{equipo.direccion ? equipo.direccion.direccion : 'No disponible'}</TableCell>
+                  <TableCell>{equipo.marca ? equipo.marca.marca: 'No Disponible'}</TableCell>
                   <TableCell>
                     <IconButton color="primary" onClick={() => handleOpen(equipo)}>
                       <Edit />
@@ -196,7 +219,7 @@ const Equipos = () => {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
-      {/* Modal para agregar/editar equipo */}
+
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{editMode ? "Editar PC" : "Agregar Nueva PC"}</DialogTitle>
         <DialogContent>
@@ -204,10 +227,24 @@ const Equipos = () => {
             .filter(field => field !== "id")
             .map((field) => (
               <Box key={field} sx={{ mb: 2 }}>
-                <TextField label={field} fullWidth value={newEquipo[field]}
-                  onChange={(e) => setNewEquipo({ ...newEquipo, [field]: e.target.value })}
-                  error={!!errors[field]} helperText={errors[field] || ""}
-                />
+                {field === "direccion" || field === "marca" ? (
+            <CustomSelect
+              label={field === "direccion" ? "Dirección" : "Marca"}
+              value={newEquipo[field] || ""}
+              onChange={(e) => setNewEquipo({ ...newEquipo, [field]: e.target.value })}
+              options={field === "direccion" ? direcciones : marcas}
+            />
+          ) : (
+            <TextField
+              label={field}
+              fullWidth
+              value={newEquipo[field] || ""}
+              onChange={(e) => setNewEquipo({ ...newEquipo, [field]: e.target.value })}
+              error={!!errors[field]}
+              helperText={errors[field] || ""}
+            />
+          )}
+
               </Box>
             ))}
         </DialogContent>
@@ -216,6 +253,7 @@ const Equipos = () => {
           <Button onClick={handleSave} color="primary" variant="contained">Guardar</Button>
         </DialogActions>
       </Dialog>
+
     </Paper>
   );
 };
