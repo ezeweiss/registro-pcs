@@ -8,6 +8,7 @@ import {
 import { Edit, Delete, Add } from "@mui/icons-material";
 import { ordenarPorIp } from "../../../ordenPorIP";
 import CustomSelect from "../../CustomSelect";
+import Buscador from "../Buscador/Buscador";
 
 const Equipos = () => {
   const [equipos, setEquipos] = useState([]);
@@ -25,6 +26,7 @@ const Equipos = () => {
     usuario: "", sector: "", direccion: "", marca: ""
   });
   const [errors, setErrors] = useState({});
+  const [searchQuery, setSearchQuery] = useState("");  // Estado para el filtro de búsqueda
 
   useEffect(() => {
     fetchEquipos();
@@ -59,6 +61,20 @@ const Equipos = () => {
     }
   };
 
+  // Filtro por texto
+  const filteredEquipos = equipos.filter(equipo => {
+    return (
+      equipo.host.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      equipo.ip.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      equipo.seriePc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      equipo.serieMonitor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      equipo.usuario.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      equipo.sector.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (equipo.direccion ? equipo.direccion.direccion.toLowerCase().includes(searchQuery.toLowerCase()) : false) ||
+      (equipo.marca ? equipo.marca.marca.toLowerCase().includes(searchQuery.toLowerCase()) : false)
+    );
+  });
+
   // Ordenar la tabla
   const handleSort = (property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -68,8 +84,8 @@ const Equipos = () => {
 
   // Ordenación personalizada por IP
   const sortedData = orderBy === "ip" 
-    ? ordenarPorIp(equipos, order)
-    : [...equipos].sort((a, b) => {
+    ? ordenarPorIp(filteredEquipos, order)
+    : [...filteredEquipos].sort((a, b) => {
         return order === "asc"
           ? String(a[orderBy]).localeCompare(String(b[orderBy]))
           : String(b[orderBy]).localeCompare(String(a[orderBy]));
@@ -100,24 +116,6 @@ const Equipos = () => {
     setOpen(true);
   };
 
-
-  const handleOpenEditar = (equipo) => {
-    setEditMode(true);  // Estamos en modo de edición
-    setCurrentId(equipo.id);  // Establecemos el ID del equipo que se va a editar
-    setNewEquipo({
-      host: equipo.host,
-      ip: equipo.ip,
-      seriePc: equipo.seriePc,
-      serieMonitor: equipo.serieMonitor,
-      usuario: equipo.usuario,
-      sector: equipo.sector,
-      direccion: equipo.id_dir,
-      marca: equipo.id_marca
-    });
-    setErrors({});  // Reseteamos los errores
-    setOpen(true);  // Abrimos el formulario
-  };
-
   const handleClose = () => {
     setOpen(false);
     setNewEquipo({
@@ -127,26 +125,6 @@ const Equipos = () => {
     setErrors({});
   };
 
-  // Validación de campos vacíos
-  const validateForm = () => {
-    let newErrors = {};
-    Object.keys(newEquipo).forEach((key) => {
-      const value = newEquipo[key];
-      
-      // Verificar si el valor es una cadena antes de aplicar .trim()
-      if (typeof value === 'string' && !value.trim()) {
-        newErrors[key] = "Este campo es obligatorio";
-      } else if (value == null || value === "") {
-        newErrors[key] = "Este campo es obligatorio";
-      }
-    });
-  
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-  
-  
-  
   const handleSave = async () => {
     const equipoAEnviar = {
       host: newEquipo.host,
@@ -173,10 +151,6 @@ const Equipos = () => {
       console.error("❌ Error al guardar el equipo:", error);
     }
   };
-  
-  
-  
-  
 
   // Eliminar equipo
   const handleDelete = async (id) => {
@@ -195,9 +169,13 @@ const Equipos = () => {
       <Typography variant="h5" align="center" gutterBottom>
         Lista de Computadoras
       </Typography>
+      
+      <Buscador searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      
       <Button variant="contained" color="primary" onClick={() => handleOpenAgregar()} sx={{ mb: 2 }}>
         <Add />
       </Button>
+      
       <TableContainer sx={{ maxHeight: 400 }}>
         <Table stickyHeader>
           <TableHead>
@@ -238,7 +216,7 @@ const Equipos = () => {
                   <TableCell>{equipo.direccion ? equipo.direccion.direccion : 'No disponible'}</TableCell>
                   <TableCell>{equipo.marca ? equipo.marca.marca: 'No Disponible'}</TableCell>
                   <TableCell>
-                    <IconButton color="primary" onClick={() => handleOpenEditar(equipo)}>
+                    <IconButton color="primary" onClick={() => handleOpenAgregar(equipo)}>
                       <Edit />
                     </IconButton>
                     <IconButton color="error" onClick={() => handleDelete(equipo.id)}>
@@ -259,45 +237,7 @@ const Equipos = () => {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
-
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{editMode ? "Editar PC" : "Agregar Nueva PC"}</DialogTitle>
-        <DialogContent>
-          {Object.keys(newEquipo)
-            .filter(field => field !== "id")
-            .map((field) => (
-              <Box key={field} sx={{ mb: 2 }}>
-                {field === "direccion" || field === "marca" ? (
-            // En Equipos.jsx, dentro de handleOpen (o donde uses CustomSelect):
-            <CustomSelect
-            label={field === "direccion" ? "Dirección" : "Marca"}
-            value={newEquipo[field] || ""}  // Asegurarse de que no sea undefined
-            onChange={(newValue) => setNewEquipo({ ...newEquipo, [field]: Number(newValue) })} // Convertir a número
-            options={field === "direccion" ? direcciones : marcas}
-          />
-          
-
-          
-          ) : (
-            <TextField
-              label={field}
-              fullWidth
-              value={newEquipo[field] || ""}
-              onChange={(e) => setNewEquipo({ ...newEquipo, [field]: e.target.value })}
-              error={!!errors[field]}
-              helperText={errors[field] || ""}
-            />
-          )}
-
-              </Box>
-            ))}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="secondary">Cancelar</Button>
-          <Button onClick={handleSave} color="primary" variant="contained">Guardar</Button>
-        </DialogActions>
-      </Dialog>
-
+      {/* Modal para agregar/editar */}
     </Paper>
   );
 };
