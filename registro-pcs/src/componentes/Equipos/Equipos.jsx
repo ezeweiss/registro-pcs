@@ -113,30 +113,50 @@ const Equipos = () => {
   const validateForm = () => {
     let newErrors = {};
     Object.keys(newEquipo).forEach((key) => {
-      if (!newEquipo[key].trim()) {
+      const value = newEquipo[key];
+      
+      // Verificar si el valor es una cadena antes de aplicar .trim()
+      if (typeof value === 'string' && !value.trim()) {
+        newErrors[key] = "Este campo es obligatorio";
+      } else if (value == null || value === "") {
         newErrors[key] = "Este campo es obligatorio";
       }
     });
+  
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  
+  
+  
 
-  // Guardar o actualizar equipo en SQL Server
   const handleSave = async () => {
-    if (validateForm()) {
-      try {
-        if (editMode && currentId) {
-          await updateEquipo(currentId, newEquipo);
-        } else {
-          await addEquipo(newEquipo);
-        }
-        handleClose();
-        fetchEquipos(); // Recargar lista
-      } catch (error) {
-        console.error("Error al guardar el equipo", error);
-      }
+    const equipoAEnviar = {
+      host: newEquipo.host,
+      ip: newEquipo.ip,
+      seriePc: newEquipo.seriePC,
+      serieMonitor: newEquipo.serieMonitor,
+      usuario: newEquipo.usuario,
+      sector: newEquipo.sector,
+      id_dir: Number(newEquipo.direccion),
+      id_marca: Number(newEquipo.marca)
+    };
+  
+    console.log("📤 Enviando equipo al backend:", equipoAEnviar);
+  
+    try {
+      await addEquipo(equipoAEnviar);
+      handleClose();
+      window.location.reload();  // Recarga la página
+    } catch (error) {
+      console.error("❌ Error al guardar el equipo:", error);
     }
   };
+  
+  
+  
+  
+  
 
   // Eliminar equipo
   const handleDelete = async (id) => {
@@ -228,12 +248,16 @@ const Equipos = () => {
             .map((field) => (
               <Box key={field} sx={{ mb: 2 }}>
                 {field === "direccion" || field === "marca" ? (
+            // En Equipos.jsx, dentro de handleOpen (o donde uses CustomSelect):
             <CustomSelect
-              label={field === "direccion" ? "Dirección" : "Marca"}
-              value={newEquipo[field] || ""}
-              onChange={(e) => setNewEquipo({ ...newEquipo, [field]: e.target.value })}
-              options={field === "direccion" ? direcciones : marcas}
-            />
+            label={field === "direccion" ? "Dirección" : "Marca"}
+            value={newEquipo[field] || ""}  // Asegurarse de que no sea undefined
+            onChange={(newValue) => setNewEquipo({ ...newEquipo, [field]: Number(newValue) })} // Convertir a número
+            options={field === "direccion" ? direcciones : marcas}
+          />
+          
+
+          
           ) : (
             <TextField
               label={field}

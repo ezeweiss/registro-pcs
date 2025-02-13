@@ -44,13 +44,16 @@ export const getMarcas = async () => {
 // Agregar un nuevo equipo
 export const addEquipo = async (equipo) => {
   try {
+    console.log("📤 Enviando equipo al backend:", JSON.stringify(equipo, null, 2));
+
     const response = await axios.post(API_URL, equipo);
     return response.data;
   } catch (error) {
-    console.error("Error al agregar equipo:", error.response ? error.response.data : error.message);
+    console.error("❌ Error al agregar equipo:", error.response ? error.response.data : error.message);
     throw error;
   }
 };
+
 
 // Actualizar un equipo
 export const updateEquipo = async (id, equipo) => {
