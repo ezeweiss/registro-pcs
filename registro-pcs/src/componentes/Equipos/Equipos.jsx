@@ -21,7 +21,7 @@ const Equipos = () => {
   const [editMode, setEditMode] = useState(false);
   const [currentId, setCurrentId] = useState(null);
   const [newEquipo, setNewEquipo] = useState({
-    host: "", ip: "", seriePC: "", serieMonitor: "",
+    host: "", ip: "", seriePc: "", serieMonitor: "",
     usuario: "", sector: "", direccion: "", marca: ""
   });
   const [errors, setErrors] = useState({});
@@ -83,7 +83,7 @@ const Equipos = () => {
   };
 
   // Abrir modal para agregar o editar
-  const handleOpen = (equipo = null) => {
+  const handleOpenAgregar = (equipo = null) => {
     if (equipo) {
       setEditMode(true);
       setCurrentId(equipo.id);
@@ -92,12 +92,30 @@ const Equipos = () => {
       setEditMode(false);
       setCurrentId(null);
       setNewEquipo({
-        host: "", ip: "", seriePC: "", serieMonitor: "",
+        host: "", ip: "", seriePc: "", serieMonitor: "",
         usuario: "", sector: "", direccion: "", marca: ""
       });
     }
     setErrors({});
     setOpen(true);
+  };
+
+
+  const handleOpenEditar = (equipo) => {
+    setEditMode(true);  // Estamos en modo de edición
+    setCurrentId(equipo.id);  // Establecemos el ID del equipo que se va a editar
+    setNewEquipo({
+      host: equipo.host,
+      ip: equipo.ip,
+      seriePc: equipo.seriePc,
+      serieMonitor: equipo.serieMonitor,
+      usuario: equipo.usuario,
+      sector: equipo.sector,
+      direccion: equipo.id_dir,
+      marca: equipo.id_marca
+    });
+    setErrors({});  // Reseteamos los errores
+    setOpen(true);  // Abrimos el formulario
   };
 
   const handleClose = () => {
@@ -129,7 +147,6 @@ const Equipos = () => {
   
   
   
-
   const handleSave = async () => {
     const equipoAEnviar = {
       host: newEquipo.host,
@@ -138,21 +155,24 @@ const Equipos = () => {
       serieMonitor: newEquipo.serieMonitor,
       usuario: newEquipo.usuario,
       sector: newEquipo.sector,
-      id_dir: Number(newEquipo.direccion),
-      id_marca: Number(newEquipo.marca)
+      id_dir: Number(newEquipo.direccion),  // Asumiendo que es un número
+      id_marca: Number(newEquipo.marca),   // Asumiendo que es un número
     };
   
-    console.log("📤 Enviando equipo al backend:", equipoAEnviar);
-  
     try {
-      await addEquipo(equipoAEnviar);
-      handleClose();
-      window.location.reload();  // Recarga la página
+      if (editMode) {
+        // Si estamos en modo edición, enviamos una solicitud PUT
+        await updateEquipo(currentId, equipoAEnviar); // Usa el ID del equipo actual
+      } else {
+        // Si no estamos en modo edición, enviamos una solicitud POST para agregar
+        await addEquipo(equipoAEnviar);
+      }
+      handleClose();  // Cerrar el modal
+      window.location.reload();  // Recargar la página
     } catch (error) {
       console.error("❌ Error al guardar el equipo:", error);
     }
   };
-  
   
   
   
@@ -175,7 +195,7 @@ const Equipos = () => {
       <Typography variant="h5" align="center" gutterBottom>
         Lista de Computadoras
       </Typography>
-      <Button variant="contained" color="primary" onClick={() => handleOpen()} sx={{ mb: 2 }}>
+      <Button variant="contained" color="primary" onClick={() => handleOpenAgregar()} sx={{ mb: 2 }}>
         <Add />
       </Button>
       <TableContainer sx={{ maxHeight: 400 }}>
@@ -218,7 +238,7 @@ const Equipos = () => {
                   <TableCell>{equipo.direccion ? equipo.direccion.direccion : 'No disponible'}</TableCell>
                   <TableCell>{equipo.marca ? equipo.marca.marca: 'No Disponible'}</TableCell>
                   <TableCell>
-                    <IconButton color="primary" onClick={() => handleOpen(equipo)}>
+                    <IconButton color="primary" onClick={() => handleOpenEditar(equipo)}>
                       <Edit />
                     </IconButton>
                     <IconButton color="error" onClick={() => handleDelete(equipo.id)}>
