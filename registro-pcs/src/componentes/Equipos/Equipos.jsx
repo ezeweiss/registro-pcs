@@ -75,6 +75,7 @@ const Equipos = () => {
     );
   });
 
+
   // Ordenar la tabla
   const handleSort = (property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -116,20 +117,58 @@ const Equipos = () => {
     setOpen(true);
   };
 
+
+  const handleOpenEditar = (equipo) => {
+    setEditMode(true);  // Estamos en modo de edición
+    setCurrentId(equipo.id);  // Establecemos el ID del equipo que se va a editar
+    setNewEquipo({
+      host: equipo.host,
+      ip: equipo.ip,
+      seriePc: equipo.seriePc,
+      serieMonitor: equipo.serieMonitor,
+      usuario: equipo.usuario,
+      sector: equipo.sector,
+      direccion: equipo.id_dir,
+      marca: equipo.id_marca
+    });
+    setErrors({});  // Reseteamos los errores
+    setOpen(true);  // Abrimos el formulario
+  };
+
   const handleClose = () => {
     setOpen(false);
     setNewEquipo({
-      host: "", ip: "", seriePC: "", serieMonitor: "",
+      host: "", ip: "", seriePc: "", serieMonitor: "",
       usuario: "", sector: "", direccion: "", marca: ""
     });
     setErrors({});
   };
 
+  // Validación de campos vacíos
+  const validateForm = () => {
+    let newErrors = {};
+    Object.keys(newEquipo).forEach((key) => {
+      const value = newEquipo[key];
+      
+      // Verificar si el valor es una cadena antes de aplicar .trim()
+      if (typeof value === 'string' && !value.trim()) {
+        newErrors[key] = "Este campo es obligatorio";
+      } else if (value == null || value === "") {
+        newErrors[key] = "Este campo es obligatorio";
+      }
+    });
+  
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
+  
+  
   const handleSave = async () => {
     const equipoAEnviar = {
       host: newEquipo.host,
       ip: newEquipo.ip,
-      seriePc: newEquipo.seriePC,
+      seriePc: newEquipo.seriePc,
       serieMonitor: newEquipo.serieMonitor,
       usuario: newEquipo.usuario,
       sector: newEquipo.sector,
@@ -151,6 +190,10 @@ const Equipos = () => {
       console.error("❌ Error al guardar el equipo:", error);
     }
   };
+  
+  
+  
+  
 
   // Eliminar equipo
   const handleDelete = async (id) => {
@@ -169,13 +212,12 @@ const Equipos = () => {
       <Typography variant="h5" align="center" gutterBottom>
         Lista de Computadoras
       </Typography>
-      
+
       <Buscador searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      
+
       <Button variant="contained" color="primary" onClick={() => handleOpenAgregar()} sx={{ mb: 2 }}>
         <Add />
       </Button>
-      
       <TableContainer sx={{ maxHeight: 400 }}>
         <Table stickyHeader>
           <TableHead>
@@ -216,7 +258,7 @@ const Equipos = () => {
                   <TableCell>{equipo.direccion ? equipo.direccion.direccion : 'No disponible'}</TableCell>
                   <TableCell>{equipo.marca ? equipo.marca.marca: 'No Disponible'}</TableCell>
                   <TableCell>
-                    <IconButton color="primary" onClick={() => handleOpenAgregar(equipo)}>
+                    <IconButton color="primary" onClick={() => handleOpenEditar(equipo)}>
                       <Edit />
                     </IconButton>
                     <IconButton color="error" onClick={() => handleDelete(equipo.id)}>
@@ -237,7 +279,45 @@ const Equipos = () => {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
-      {/* Modal para agregar/editar */}
+
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>{editMode ? "Editar PC" : "Agregar Nueva PC"}</DialogTitle>
+        <DialogContent>
+          {Object.keys(newEquipo)
+            .filter(field => field !== "id")
+            .map((field) => (
+              <Box key={field} sx={{ mb: 2 }}>
+                {field === "direccion" || field === "marca" ? (
+            // En Equipos.jsx, dentro de handleOpen (o donde uses CustomSelect):
+            <CustomSelect
+            label={field === "direccion" ? "Dirección" : "Marca"}
+            value={newEquipo[field] || ""}  // Asegurarse de que no sea undefined
+            onChange={(newValue) => setNewEquipo({ ...newEquipo, [field]: Number(newValue) })} // Convertir a número
+            options={field === "direccion" ? direcciones : marcas}
+          />
+          
+
+          
+          ) : (
+            <TextField
+              label={field}
+              fullWidth
+              value={newEquipo[field] || ""}
+              onChange={(e) => setNewEquipo({ ...newEquipo, [field]: e.target.value })}
+              error={!!errors[field]}
+              helperText={errors[field] || ""}
+            />
+          )}
+
+              </Box>
+            ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="secondary">Cancelar</Button>
+          <Button onClick={handleSave} color="primary" variant="contained">Guardar</Button>
+        </DialogActions>
+      </Dialog>
+
     </Paper>
   );
 };
