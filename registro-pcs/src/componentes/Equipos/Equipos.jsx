@@ -1,22 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { getEquipos, addEquipo, updateEquipo, deleteEquipo, getDirecciones, getMarcas } from "../../api/api"; // Importa las funciones de la API
-import {
-  Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Paper,
-  TablePagination, TableSortLabel, Typography, TextField, Button, Dialog,
-  DialogActions, DialogContent, DialogTitle, IconButton, Box, MenuItem, Select, InputLabel, FormControl,
-  Grid
+import { Paper, Typography, TextField, Button, Dialog,
+  DialogActions, DialogContent, DialogTitle, Grid
 } from "@mui/material";
-import { Edit, Delete, Add } from "@mui/icons-material";
+import { Add } from "@mui/icons-material";
 import { ordenarPorIp } from "../../../ordenPorIP";
 import CustomSelect from "../../CustomSelect";
 import Buscador from "../Buscador/Buscador";
+import TablaEquipos from "../TablaEquipos/TablaEquipos";
 
 const Equipos = () => {
   const [equipos, setEquipos] = useState([]);
   const [direcciones, setDirecciones] = useState([]);
   const [marcas, setMarcas] = useState([]);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(7);
   const [orderBy, setOrderBy] = useState("ip");
   const [order, setOrder] = useState("asc");
   const [open, setOpen] = useState(false);
@@ -98,7 +96,7 @@ const Equipos = () => {
   // Paginación
   const handleChangePage = (_, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    setRowsPerPage(parseInt(event.target.value, 7));
     setPage(0);
   };
 
@@ -166,7 +164,6 @@ const Equipos = () => {
   };
   
   
-  
   const handleSave = async () => {
     const equipoAEnviar = {
       host: newEquipo.host,
@@ -175,39 +172,37 @@ const Equipos = () => {
       serieMonitor: newEquipo.serieMonitor,
       usuario: newEquipo.usuario,
       sector: newEquipo.sector,
-      id_dir: Number(newEquipo.direccion),  // Asumiendo que es un número
-      id_marca: Number(newEquipo.marca),   // Asumiendo que es un número
+      id_dir: Number(newEquipo.direccion), 
+      id_marca: Number(newEquipo.marca), 
     };
   
     try {
       if (editMode) {
-        // Si estamos en modo edición, enviamos una solicitud PUT
-        await updateEquipo(currentId, equipoAEnviar); // Usa el ID del equipo actual
+        await updateEquipo(currentId, equipoAEnviar);
       } else {
-        // Si no estamos en modo edición, enviamos una solicitud POST para agregar
-        await addEquipo(equipoAEnviar);
+        const newEquipoAdded = await addEquipo(equipoAEnviar);
+      setEquipos((prevEquipos) => [newEquipoAdded, ...prevEquipos]);       
       }
-      handleClose();  // Cerrar el modal
-      window.location.reload();  // Recargar la página
+      const totalEquipos = equipos.length + 1;
+      const totalPages = Math.ceil(totalEquipos / rowsPerPage);
+      if (page >= totalPages) {
+        setPage(totalPages - 1);
+      }
+      handleClose();
+      fetchEquipos();
     } catch (error) {
       console.error("❌ Error al guardar el equipo:", error);
     }
   };
   
-  
-  
-  
 
-  // Eliminar equipo
   const handleDelete = async (id) => {
-    if (window.confirm("¿Estás seguro de que deseas eliminar este equipo?")) {
       try {
         await deleteEquipo(id);
-        fetchEquipos(); // Recargar lista
+        fetchEquipos();
       } catch (error) {
         console.error("Error al eliminar el equipo", error);
       }
-    }
   };
 
 
@@ -222,197 +217,148 @@ const Equipos = () => {
       <Button variant="contained" color="primary" onClick={() => handleOpenAgregar()} sx={{ mb: 2 }}>
         <Add />
       </Button>
-      <TableContainer sx={{ maxHeight: 400 }}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              {[{ key: "host", label: "Nombre" },
-                { key: "ip", label: "IP" },
-                { key: "seriePC", label: "N° Serie PC" },
-                { key: "serieMonitor", label: "N° Serie Monitor" },
-                { key: "usuario", label: "Persona" },
-                { key: "sector", label: "Sector" },
-                { key: "direccion", label: "Dirección" },
-                { key: "marca", label: "Marca PC" }
-              ].map((column) => (
-                <TableCell key={column.key} sx={{ fontWeight: "bold" }}>
-                  <TableSortLabel
-                    active={orderBy === column.key}
-                    direction={orderBy === column.key ? order : "asc"}
-                    onClick={() => handleSort(column.key)}
-                  >
-                    {column.label}
-                  </TableSortLabel>
-                </TableCell>
-              ))}
-              <TableCell sx={{ fontWeight: "bold" }}>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sortedData
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((equipo) => (
-                <TableRow key={equipo.id} hover>
-                  <TableCell>{equipo.host}</TableCell>
-                  <TableCell>{equipo.ip}</TableCell>
-                  <TableCell>{equipo.seriePc}</TableCell>
-                  <TableCell>{equipo.serieMonitor}</TableCell>
-                  <TableCell>{equipo.usuario}</TableCell>
-                  <TableCell>{equipo.sector}</TableCell>
-                  <TableCell>{equipo.direccion ? equipo.direccion.direccion : 'No disponible'}</TableCell>
-                  <TableCell>{equipo.marca ? equipo.marca.marca: 'No Disponible'}</TableCell>
-                  <TableCell>
-                    <IconButton color="primary" onClick={() => handleOpenEditar(equipo)}>
-                      <Edit />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(equipo.id)}>
-                      <Delete />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 20]}
-        component="div"
-        count={equipos.length}
-        rowsPerPage={rowsPerPage}
+      
+      <TablaEquipos
+        equipos={sortedData}
+        orderBy={orderBy}
+        order={order}
+        handleSort={handleSort}
         page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
+        rowsPerPage={rowsPerPage}
+        handleChangePage={handleChangePage}
+        handleChangeRowsPerPage={handleChangeRowsPerPage}
+        handleOpenEditar={handleOpenEditar}
+        handleDelete={handleDelete}
       />
 
-<Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-  <DialogTitle>{editMode ? "Editar PC" : "Agregar Nueva PC"}</DialogTitle>
-  <DialogContent>
-    <Grid container spacing={2}>
-      {/* Información General */}
-      <Grid item xs={12}>
-        <Typography variant="subtitle1" fontWeight="bold">
-          Información General
-        </Typography>
-      </Grid>
+    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+      <DialogTitle>{editMode ? "Editar PC" : "Agregar Nueva PC"}</DialogTitle>
+      <DialogContent>
+        <Grid container spacing={2}>
 
-      <Grid item xs={6}>
-        <TextField
-          label="Nombre del Equipo"
-          placeholder="Ej. PC-Sala1"
-          fullWidth
-          value={newEquipo.host || ""}
-          onChange={(e) => setNewEquipo({ ...newEquipo, host: e.target.value })}
-          error={!!errors.host}
-          helperText={errors.host || ""}
-        />
-      </Grid>
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Información General
+            </Typography>
+          </Grid>
 
-      <Grid item xs={6}>
-        <TextField
-          label="Dirección IP"
-          placeholder="Ej. 192.168.1.100"
-          fullWidth
-          value={newEquipo.ip || ""}
-          onChange={(e) => setNewEquipo({ ...newEquipo, ip: e.target.value })}
-          error={!!errors.ip}
-          helperText={errors.ip || ""}
-        />
-      </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Nombre del Equipo"
+              placeholder="Ej. PC-Sala1"
+              fullWidth
+              value={newEquipo.host || ""}
+              onChange={(e) => setNewEquipo({ ...newEquipo, host: e.target.value })}
+              error={!!errors.host}
+              helperText={errors.host || ""}
+            />
+          </Grid>
 
-      {/* Identificación */}
-      <Grid item xs={12}>
-        <Typography variant="subtitle1" fontWeight="bold">
-          Identificación
-        </Typography>
-      </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Dirección IP"
+              placeholder="Ej. 192.168.1.100"
+              fullWidth
+              value={newEquipo.ip || ""}
+              onChange={(e) => setNewEquipo({ ...newEquipo, ip: e.target.value })}
+              error={!!errors.ip}
+              helperText={errors.ip || ""}
+            />
+          </Grid>
 
-      <Grid item xs={6}>
-        <TextField
-          label="Número de Serie PC"
-          placeholder="Ej. SN12345"
-          fullWidth
-          value={newEquipo.seriePc || ""}
-          onChange={(e) => setNewEquipo({ ...newEquipo, seriePc: e.target.value })}
-          error={!!errors.seriePc}
-          helperText={errors.seriePc || ""}
-        />
-      </Grid>
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Identificación
+            </Typography>
+          </Grid>
 
-      <Grid item xs={6}>
-        <TextField
-          label="Número de Serie Monitor"
-          placeholder="Ej. MON67890"
-          fullWidth
-          value={newEquipo.serieMonitor || ""}
-          onChange={(e) => setNewEquipo({ ...newEquipo, serieMonitor: e.target.value })}
-          error={!!errors.serieMonitor}
-          helperText={errors.serieMonitor || ""}
-        />
-      </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Número de Serie PC"
+              placeholder="Ej. SN12345"
+              fullWidth
+              value={newEquipo.seriePc || ""}
+              onChange={(e) => setNewEquipo({ ...newEquipo, seriePc: e.target.value })}
+              error={!!errors.seriePc}
+              helperText={errors.seriePc || ""}
+            />
+          </Grid>
 
-      {/* Ubicación y Asignación */}
-      <Grid item xs={12}>
-        <Typography variant="subtitle1" fontWeight="bold">
-          Ubicación y Asignación
-        </Typography>
-      </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Número de Serie Monitor"
+              placeholder="Ej. MON67890"
+              fullWidth
+              value={newEquipo.serieMonitor || ""}
+              onChange={(e) => setNewEquipo({ ...newEquipo, serieMonitor: e.target.value })}
+              error={!!errors.serieMonitor}
+              helperText={errors.serieMonitor || ""}
+            />
+          </Grid>
 
-      <Grid item xs={6}>
-        <TextField
-          label="Persona Responsable"
-          placeholder="Ej. Juan Pérez"
-          fullWidth
-          value={newEquipo.usuario || ""}
-          onChange={(e) => setNewEquipo({ ...newEquipo, usuario: e.target.value })}
-          error={!!errors.usuario}
-          helperText={errors.usuario || ""}
-        />
-      </Grid>
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Ubicación y Asignación
+            </Typography>
+          </Grid>
 
-      <Grid item xs={6}>
-        <TextField
-          label="Sector"
-          placeholder="Ej. Oficina de Sistemas"
-          fullWidth
-          value={newEquipo.sector || ""}
-          onChange={(e) => setNewEquipo({ ...newEquipo, sector: e.target.value })}
-          error={!!errors.sector}
-          helperText={errors.sector || ""}
-        />
-      </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Persona Responsable"
+              placeholder="Ej. Juan Pérez"
+              fullWidth
+              value={newEquipo.usuario || ""}
+              onChange={(e) => setNewEquipo({ ...newEquipo, usuario: e.target.value })}
+              error={!!errors.usuario}
+              helperText={errors.usuario || ""}
+            />
+          </Grid>
 
-      <Grid item xs={6}>
-        <CustomSelect
-          label="Dirección"
-          value={newEquipo.direccion || ""}
-          onChange={(newValue) => setNewEquipo({ ...newEquipo, direccion: Number(newValue) })}
-          options={direcciones}
-        />
-      </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Sector"
+              placeholder="Ej. Oficina de Sistemas"
+              fullWidth
+              value={newEquipo.sector || ""}
+              onChange={(e) => setNewEquipo({ ...newEquipo, sector: e.target.value })}
+              error={!!errors.sector}
+              helperText={errors.sector || ""}
+            />
+          </Grid>
 
-      <Grid item xs={6}>
-        <CustomSelect
-          label="Marca"
-          value={newEquipo.marca || ""}
-          onChange={(newValue) => setNewEquipo({ ...newEquipo, marca: Number(newValue) })}
-          options={marcas}
-        />
-      </Grid>
-    </Grid>
-  </DialogContent>
-  
-  <DialogActions sx={{ padding: "16px" }}>
-    <Button onClick={handleClose} color="error" variant="outlined">
-      Cancelar
-    </Button>
-    <Button onClick={handleSave} color="success" variant="contained">
-      Guardar
-    </Button>
-  </DialogActions>
-</Dialog>
+          <Grid item xs={6}>
+            <CustomSelect
+              label="Dirección"
+              value={newEquipo.direccion || ""}
+              onChange={(newValue) => setNewEquipo({ ...newEquipo, direccion: Number(newValue) })}
+              options={direcciones}
+            />
+          </Grid>
+
+          <Grid item xs={6}>
+            <CustomSelect
+              label="Marca"
+              value={newEquipo.marca || ""}
+              onChange={(newValue) => setNewEquipo({ ...newEquipo, marca: Number(newValue) })}
+              options={marcas}
+            />
+          </Grid>
+        </Grid>
+      </DialogContent>
+      
+      <DialogActions sx={{ padding: "16px" }}>
+        <Button onClick={handleClose} color="error" variant="outlined">
+          Cancelar
+        </Button>
+        <Button onClick={handleSave} color="success" variant="contained">
+          Guardar
+        </Button>
+      </DialogActions>
+    </Dialog>
 
     </Paper>
   );
 };
 
 export default Equipos;
+
