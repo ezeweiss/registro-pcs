@@ -1,11 +1,12 @@
 import React from "react";
-import { AppBar, Toolbar, Typography, Box, Button } from "@mui/material";
+import { AppBar, Toolbar, Box, Button } from "@mui/material";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   return (
     <AppBar position="static" color="primary">
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Box>
+        <Box component={Link} to="/">
             <img
                 src="src/assets/img/logo.png"
                 alt="Logo"
@@ -14,8 +15,8 @@ const Navbar = () => {
         </Box>
         
         <Box>
-          <Button color="inherit">Computadoras</Button>
-          <Button color="inherit">Teléfonos</Button>
+          <Button color="inherit" component={Link} to='/'>Computadoras</Button>
+          <Button color="inherit" component={Link} to='/telefonos'>Teléfonos</Button>
           <Button color="inherit"></Button>
           <Button color="inherit"></Button>
         </Box>

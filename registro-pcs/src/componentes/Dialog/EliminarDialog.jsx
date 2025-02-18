@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import React from 'react'
 
 const abrirDialogoEliminar = (equipo) => {
@@ -25,13 +25,15 @@ function EliminarDialog({ openDialog, cerrarDialogoEliminar, confirmarEliminacio
     <Dialog open={openDialog} onClose={cerrarDialogoEliminar}>
         <DialogTitle>Confirmar Eliminación</DialogTitle>
         <DialogContent>
-          <p>¿Estás seguro de que deseas eliminar este equipo?</p>
+          <Typography variant="subtitle2" fontWeight="bold">
+            ¿Estás seguro de que deseas eliminar este equipo?
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={cerrarDialogoEliminar} color="primary">
+          <Button onClick={cerrarDialogoEliminar} color="error" variant="outlined">
             Cancelar
           </Button>
-          <Button onClick={confirmarEliminacion} color="error">
+          <Button onClick={confirmarEliminacion} color="error" variant="contained">
             Eliminar
           </Button>
         </DialogActions>
