@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getEquipos, addEquipo, updateEquipo, deleteEquipo, getDirecciones, getMarcas } from "../../api/api"; // Importa las funciones de la API
 import { Paper, Typography, Button} from "@mui/material";
 import { Add } from "@mui/icons-material";
-import { ordenarPorIp } from "../../../ordenPorIP";
+import { ordenarPorIp } from "../../api/ordenPorIP";
 import Buscador from "../Buscador/Buscador";
 import TablaEquipos from "../TablaEquipos/TablaEquipos";
 import FormEquipos from "../FormEquipos/FormEquipos";

@@ -35,16 +35,18 @@ const validateFields = () => {
     formErrors.ip = "El formato de la dirección IP es inválido";
   }
 
-  const usuarioRegex = /^[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+$/;
-  if (!newEquipo.usuario) {
-    formErrors.usuario = "El usuario es obligatorio";
-  } else if (!usuarioRegex.test(newEquipo.usuario)) {
-    formErrors.usuario = "El nombre del usuario solo puede contener letras y espacios";
-  }
+  // // Validar que usuario solo contenga letras y espacios
+  // const usuarioRegex = /^[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+$/;
+  // if (!newEquipo.usuario) {
+  //   formErrors.usuario = "La persona responsable es obligatoria";
+  // } else if (!usuarioRegex.test(newEquipo.usuario)) {
+  //   formErrors.usuario = "El nombre solo puede contener letras y espacios";
+  // }
 
   if (!newEquipo.host) formErrors.host = "El nombre del equipo es obligatorio";
   if (!newEquipo.seriePc) formErrors.seriePc = "El número de serie de la PC es obligatorio";
   if (!newEquipo.serieMonitor) formErrors.serieMonitor = "El número de serie del monitor es obligatorio";
+  if (!newEquipo.usuario) formErrors.usuario = "La persona responsable es obligatoria";
   if (!newEquipo.sector) formErrors.sector = "El sector es obligatorio";
   if (!newEquipo.direccion) formErrors.direccion = "La dirección es obligatoria";
   if (!newEquipo.marca) formErrors.marca = "La marca es obligatoria";

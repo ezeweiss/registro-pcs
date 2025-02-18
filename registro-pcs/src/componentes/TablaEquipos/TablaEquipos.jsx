@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import {
   Table,
@@ -11,26 +11,66 @@ import {
   TableSortLabel,
   IconButton,
   TablePagination,
+  Button, 
+  Stack, // Agregamos Stack para organizar los botones
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import EliminarDialog from "../Dialog/EliminarDialog";
+import { useNavigate } from "react-router-dom";
 
-
-const TablaEquipos = ({ equipos, orderBy, order, setOrderBy, handleOpenEditar, handleDelete, page, rowsPerPage, handleChangePage, handleChangeRowsPerPage }) => {
-  
+const TablaEquipos = ({
+  equipos,
+  orderBy,
+  order,
+  setOrderBy,
+  handleOpenEditar,
+  handleDelete,
+  page,
+  rowsPerPage,
+  handleChangePage,
+  handleChangeRowsPerPage,
+}) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [equipoAEliminar, setEquipoAEliminar] = useState(null);
-  
-  const equiposPaginaActual = equipos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const navigate = useNavigate(); 
+  const [currentPage, setCurrentPage] = useState(page);
 
+  useEffect(() => {
+    if (window.location.pathname === "/") {
+      setCurrentPage(0);
+    }
+  }, [window.location.pathname]);
 
   const handleSort = (key) => {
-    if (orderBy === key) {
-      setOrderBy(order === "asc" ? "desc" : "asc");
-    } else {
+    if (key === "ip") {
       setOrderBy(key);
+      setOrder(order === "asc" ? "desc" : "asc");
+    } else {
+      if (orderBy === key) {
+        setOrder(order === "asc" ? "desc" : "asc");
+      } else {
+        setOrderBy(key);
+      }
     }
   };
+
+  const sortedEquipos = [...equipos].sort((a, b) => {
+    if (orderBy === "ip") {
+      const ipA = a.ip.split('.').map(Number);
+      const ipB = b.ip.split('.').map(Number);
+      for (let i = 0; i < 4; i++) {
+        if (ipA[i] < ipB[i]) return order === "asc" ? -1 : 1;
+        if (ipA[i] > ipB[i]) return order === "asc" ? 1 : -1;
+      }
+      return 0;
+    }
+
+    return order === "asc"
+      ? String(a[orderBy]).localeCompare(String(b[orderBy]))
+      : String(b[orderBy]).localeCompare(String(a[orderBy]));
+  });
+
+  const equiposPaginaActual = sortedEquipos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const abrirDialogoEliminar = (equipo) => {
     setEquipoAEliminar(equipo);
@@ -92,14 +132,21 @@ const TablaEquipos = ({ equipos, orderBy, order, setOrderBy, handleOpenEditar, h
         </TableBody>
       </Table>
 
+      {/* Pagina con números */}
       <TablePagination
         rowsPerPageOptions={[7]}
         component="div"
         count={equipos.length}
         rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
+        page={currentPage}
+        onPageChange={(event, newPage) => {
+          setCurrentPage(newPage);
+          handleChangePage(event, newPage);
+        }}
         onRowsPerPageChange={handleChangeRowsPerPage}
+        showFirstButton
+        showLastButton
+        siblingCount={1}
       />
 
       <EliminarDialog
@@ -107,7 +154,6 @@ const TablaEquipos = ({ equipos, orderBy, order, setOrderBy, handleOpenEditar, h
         cerrarDialogoEliminar={cerrarDialogoEliminar}
         confirmarEliminacion={confirmarEliminacion}
       />
-
     </TableContainer>
   );
 };
