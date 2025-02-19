@@ -10,9 +10,7 @@ import {
   Paper,
   TableSortLabel,
   IconButton,
-  TablePagination,
-  Button, 
-  Stack, // Agregamos Stack para organizar los botones
+  TablePagination
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import EliminarDialog from "../Dialog/EliminarDialog";
@@ -34,6 +32,7 @@ const TablaEquipos = ({
   const [equipoAEliminar, setEquipoAEliminar] = useState(null);
   const navigate = useNavigate(); 
   const [currentPage, setCurrentPage] = useState(page);
+  const [ipNoUsadas, setIpNoUsadas] = useState([]);
 
   useEffect(() => {
     if (window.location.pathname === "/") {
@@ -72,6 +71,29 @@ const TablaEquipos = ({
 
   const equiposPaginaActual = sortedEquipos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+
+  useEffect(() => {
+    const generarRangoIPs = (inicio, fin) => {
+      let ips = [];
+      let partes = inicio.split('.').map(Number);
+      let last = Number(fin.split('.')[3]);
+  
+      for (let i = partes[3]; i <= last; i++) {
+        ips.push(`${partes[0]}.${partes[1]}.${partes[2]}.${i}`);
+      }
+  
+      return ips;
+    };
+  
+    const todasLasIps = generarRangoIPs("10.0.14.1", "10.0.14.255");
+  
+    const ipUsadas = equipos.map(e => e.ip);
+    const disponibles = todasLasIps.filter(ip => !ipUsadas.includes(ip));
+  
+    setIpNoUsadas(disponibles);
+  }, [equipos]);
+
+
   const abrirDialogoEliminar = (equipo) => {
     setEquipoAEliminar(equipo);
     setOpenDialog(true);
@@ -90,7 +112,7 @@ const TablaEquipos = ({
   };
 
   return (
-    <TableContainer component={Paper} sx={{ maxHeight: "70vh", overflowY: "auto" }}>
+    <><TableContainer component={Paper} sx={{ maxHeight: "70vh", overflowY: "auto" }}>
       <Table stickyHeader>
         <TableHead>
           <TableRow>
@@ -142,19 +164,18 @@ const TablaEquipos = ({
         onPageChange={(event, newPage) => {
           setCurrentPage(newPage);
           handleChangePage(event, newPage);
-        }}
+        } }
         onRowsPerPageChange={handleChangeRowsPerPage}
         showFirstButton
         showLastButton
-        siblingCount={1}
-      />
+        siblingCount={1} />
 
       <EliminarDialog
         openDialog={openDialog}
         cerrarDialogoEliminar={cerrarDialogoEliminar}
-        confirmarEliminacion={confirmarEliminacion}
-      />
+        confirmarEliminacion={confirmarEliminacion} />
     </TableContainer>
+</>
   );
 };
 

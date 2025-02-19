@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { getEquipos, addEquipo, updateEquipo, deleteEquipo, getDirecciones, getMarcas } from "../../api/api"; // Importa las funciones de la API
-import { Paper, Typography, Button} from "@mui/material";
+import { Paper, Typography, Button, Grid} from "@mui/material";
 import { Add } from "@mui/icons-material";
 import { ordenarPorIp } from "../../api/ordenPorIP";
 import Buscador from "../Buscador/Buscador";
 import TablaEquipos from "../TablaEquipos/TablaEquipos";
 import FormEquipos from "../FormEquipos/FormEquipos";
+import { Link } from "react-router-dom";
+import TablaIPNoUsadas from "../TablaIPNoUsadas/TablaIPNoUsadas";
 
 const Equipos = () => {
   const [equipos, setEquipos] = useState([]);
@@ -24,13 +26,19 @@ const Equipos = () => {
   });
   const [errors, setErrors] = useState({});
 
-  const [searchQuery, setSearchQuery] = useState("");  // Estado para el filtro de búsqueda
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showIpNoUsadas, setShowIpNoUsadas] = useState(false);
 
   useEffect(() => {
     fetchEquipos();
     fetchDirecciones();
     fetchMarcas();
   }, []);
+
+  useEffect(() => {
+    setPage(0);
+  }, [searchQuery]);
+  
 
 
   const fetchEquipos = async () => {
@@ -118,8 +126,8 @@ const Equipos = () => {
 
 
   const handleOpenEditar = (equipo) => {
-    setEditMode(true);  // Estamos en modo de edición
-    setCurrentId(equipo.id);  // Establecemos el ID del equipo que se va a editar
+    setEditMode(true);
+    setCurrentId(equipo.id);
     setNewEquipo({
       host: equipo.host,
       ip: equipo.ip,
@@ -130,8 +138,8 @@ const Equipos = () => {
       direccion: equipo.id_dir,
       marca: equipo.id_marca
     });
-    setErrors({});  // Reseteamos los errores
-    setOpen(true);  // Abrimos el formulario
+    setErrors({});
+    setOpen(true);
   };
 
   const handleClose = () => {
@@ -184,6 +192,18 @@ const Equipos = () => {
       }
   };
 
+  const handleToggleIpNoUsadas = () => {
+    setShowIpNoUsadas(!showIpNoUsadas);
+  };
+
+  const handleOpenTablaIpNoUsadas = () => {
+    setShowIpNoUsadas(true);
+  };
+
+  const handleCloseDialog = () => {
+    setShowIpNoUsadas(false);
+  };
+
 
   return (
     <Paper sx={{ width: "95%", margin: "20px auto", padding: 2, borderRadius: 3, boxShadow: 3 }}>
@@ -193,9 +213,22 @@ const Equipos = () => {
 
       <Buscador searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-      <Button variant="contained" color="primary" onClick={() => handleOpenAgregar()} sx={{ mb: 2 }}>
-        <Add />
-      </Button>
+      <Grid container spacing={2} sx={{ mb: 2 }}>
+        <Grid item xs={6}>
+          <Button variant="contained" color="primary" onClick={() => handleOpenAgregar()}>
+            <Add />
+          </Button>
+        </Grid>
+
+
+        <Grid item xs={6} sx={{ textAlign: "right" }}>
+          <Button variant="contained" color="secondary" onClick={handleToggleIpNoUsadas}>
+            Ver IPs No Usadas
+          </Button>
+        </Grid>
+      </Grid>
+
+      <TablaIPNoUsadas open={showIpNoUsadas} onClose={handleCloseDialog}/>
       
       <TablaEquipos
         equipos={sortedData}

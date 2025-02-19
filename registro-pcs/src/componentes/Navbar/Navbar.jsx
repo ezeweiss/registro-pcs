@@ -1,10 +1,18 @@
-import React from "react";
-import { AppBar, Toolbar, Box, Button } from "@mui/material";
+import React, {useState} from "react";
+import { AppBar, Toolbar, Box, Button, Dialog, DialogTitle, IconButton, DialogContent, Menu, MenuItem } from "@mui/material";
 import { Link } from "react-router-dom";
+import TablaIPNoUsadas from "../TablaIPNoUsadas/TablaIPNoUsadas";
+import { ArrowDropDown, Close } from "@mui/icons-material";
 
-const Navbar = () => {
+const Navbar = ({equipos}) => {
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleMenuOpen = (event) =>  setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
+
+
   return (
-    <AppBar position="static" color="primary">
+    <><AppBar position="static" color="primary">
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
         <Box component={Link} to="/">
             <img
@@ -22,6 +30,7 @@ const Navbar = () => {
         </Box>
       </Toolbar>
     </AppBar>
+  </>
   );
 };
 
