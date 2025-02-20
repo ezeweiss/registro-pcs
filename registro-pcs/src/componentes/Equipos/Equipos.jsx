@@ -223,7 +223,7 @@ const Equipos = () => {
 
         <Grid item xs={6} sx={{ textAlign: "right" }}>
           <Button variant="contained" color="secondary" onClick={handleToggleIpNoUsadas}>
-            Ver IPs No Usadas
+            Ver IPs Disponibles
           </Button>
         </Grid>
       </Grid>

@@ -21,7 +21,6 @@ const TablaIPNoUsadas = ({ open, onClose }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Función para cargar los equipos y calcular las IPs no usadas
   const fetchEquipos = async () => {
     try {
       const equipos = await getEquipos();
@@ -48,7 +47,6 @@ const TablaIPNoUsadas = ({ open, onClose }) => {
     }
   };
 
-  // Llamar a fetchEquipos cuando el Dialog se abre
   useEffect(() => {
     if (open) {
       fetchEquipos();
@@ -66,7 +64,7 @@ const TablaIPNoUsadas = ({ open, onClose }) => {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>IPs No Usadas</DialogTitle>
+      <DialogTitle>IPs Disponibles</DialogTitle>
       <DialogContent>
         <TableContainer component={Paper}>
           <Table>
