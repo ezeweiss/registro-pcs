@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { getEquipos, addEquipo, updateEquipo, deleteEquipo, getDirecciones, getMarcas } from "../../api/api"; // Importa las funciones de la API
+import { getEquipos, addEquipo, updateEquipo, deleteEquipo, getDirecciones, getMarcas } from "../../api/api";
 import { Paper, Typography, Button, Grid} from "@mui/material";
 import { Add } from "@mui/icons-material";
 import { ordenarPorIp } from "../../api/ordenPorIP";
 import Buscador from "../Buscador/Buscador";
 import TablaEquipos from "../TablaEquipos/TablaEquipos";
 import FormEquipos from "../FormEquipos/FormEquipos";
-import { Link } from "react-router-dom";
 import TablaIPNoUsadas from "../TablaIPNoUsadas/TablaIPNoUsadas";
 
 const Equipos = () => {
@@ -28,6 +27,7 @@ const Equipos = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showIpNoUsadas, setShowIpNoUsadas] = useState(false);
+  const [equipoOriginal, setEquipoOriginal] = useState({});
 
   useEffect(() => {
     fetchEquipos();
@@ -53,7 +53,7 @@ const Equipos = () => {
   const fetchDirecciones = async () => {
     try {
       const data = await getDirecciones();
-      setDirecciones(data.map(d => ({ id: d.id, nombre: d.direccion }))); // Asegura que la estructura es correcta
+      setDirecciones(data.map(d => ({ id: d.id, nombre: d.direccion })));
     } catch (error) {
       console.error("Error al cargar las direcciones", error);
     }
@@ -62,13 +62,12 @@ const Equipos = () => {
   const fetchMarcas = async () => {
     try {
       const data = await getMarcas();
-      setMarcas(data.map(m => ({ id: m.id, nombre: m.marca }))); // Asegura que la estructura es correcta
+      setMarcas(data.map(m => ({ id: m.id, nombre: m.marca })));
     } catch (error) {
       console.error("Error al cargar las marcas", error);
     }
   };
 
-  // Filtro por texto
   const filteredEquipos = equipos.filter(equipo => {
     return (
       equipo.host.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -83,14 +82,12 @@ const Equipos = () => {
   });
 
 
-  // Ordenar la tabla
   const handleSort = (property) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
-  // Ordenación personalizada por IP
   const sortedData = orderBy === "ip" 
     ? ordenarPorIp(filteredEquipos, order)
     : [...filteredEquipos].sort((a, b) => {
@@ -99,14 +96,12 @@ const Equipos = () => {
           : String(b[orderBy]).localeCompare(String(a[orderBy]));
     });
 
-  // Paginación
   const handleChangePage = (_, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 7));
     setPage(0);
   };
 
-  // Abrir modal para agregar o editar
   const handleOpenAgregar = (equipo = null) => {
     if (equipo) {
       setEditMode(true);
@@ -128,6 +123,7 @@ const Equipos = () => {
   const handleOpenEditar = (equipo) => {
     setEditMode(true);
     setCurrentId(equipo.id);
+    setEquipoOriginal(equipo);
     setNewEquipo({
       host: equipo.host,
       ip: equipo.ip,
@@ -164,12 +160,30 @@ const Equipos = () => {
     };
   
     try {
+      const isDuplicateHost = equipos.some(
+        (equipo) => equipo.host === newEquipo.host && equipo.id !== currentId
+      );
+      const isDuplicateIp = equipos.some(
+        (equipo) => equipo.ip === newEquipo.ip && equipo.id !== currentId
+      );
+  
+      if (isDuplicateHost) {
+        setErrors((prevErrors) => ({ ...prevErrors, host: "Este host ya está registrado." }));
+        return;
+      }
+  
+      if (isDuplicateIp) {
+        setErrors((prevErrors) => ({ ...prevErrors, ip: "Esta IP ya está registrada." }));
+        return;
+      }
+  
       if (editMode) {
         await updateEquipo(currentId, equipoAEnviar);
       } else {
         const newEquipoAdded = await addEquipo(equipoAEnviar);
-      setEquipos((prevEquipos) => [newEquipoAdded, ...prevEquipos]);       
+        setEquipos((prevEquipos) => [newEquipoAdded, ...prevEquipos]);       
       }
+  
       const totalEquipos = equipos.length + 1;
       const totalPages = Math.ceil(totalEquipos / rowsPerPage);
       if (page >= totalPages) {
@@ -255,6 +269,8 @@ const Equipos = () => {
         marcas={marcas}
         errors = {errors}
         setErrors = {setErrors}
+        equipos = {equipos}
+        equipoOriginal  = {equipoOriginal}
       />
 
     </Paper>

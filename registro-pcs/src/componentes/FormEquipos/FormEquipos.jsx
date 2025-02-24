@@ -22,30 +22,55 @@ const FormEquipos = ({
   editMode,
   direcciones,
   marcas,
+  equipos,
+  equipoOriginal
 }) => {
 
   const validateFields = () => {
     let formErrors = {};
     const ipRegex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-    if (!newEquipo.ip) {
-      formErrors.ip = "La dirección IP es obligatoria";
-    } else if (!ipRegex.test(newEquipo.ip)) {
-      formErrors.ip = "El formato de la dirección IP es inválido";
+  
+    if (newEquipo.ip !== equipoOriginal.ip) {
+      if (!newEquipo.ip) {
+        formErrors.ip = "La dirección IP es obligatoria";
+      } else if (!ipRegex.test(newEquipo.ip)) {
+        formErrors.ip = "El formato de la dirección IP es inválido";
+      } else if (
+        equipos.some(
+          (equipo) =>
+            equipo.ip === newEquipo.ip && equipo.id !== newEquipo.id
+        )
+      ) {
+        formErrors.ip = "La dirección IP ya está registrada";
+      }
     }
-
-    if (!newEquipo.host) formErrors.host = "El nombre del equipo es obligatorio";
+  
+    if (newEquipo.host !== equipoOriginal.host) {
+      if (!newEquipo.host) formErrors.host = "El nombre del equipo es obligatorio";
+      else if (
+        equipos.some(
+          (equipo) =>
+            equipo.host.toLowerCase() === newEquipo.host.toLowerCase() &&
+            equipo.id !== newEquipo.id
+        )
+      ) {
+        formErrors.host = "El nombre del equipo ya está registrado";
+      }
+    }
+  
     if (!newEquipo.seriePc) formErrors.seriePc = "El número de serie de la PC es obligatorio";
     if (!newEquipo.serieMonitor) formErrors.serieMonitor = "El número de serie del monitor es obligatorio";
     if (!newEquipo.usuario) formErrors.usuario = "La persona responsable es obligatoria";
     if (!newEquipo.sector) formErrors.sector = "El sector es obligatorio";
     if (!newEquipo.direccion) formErrors.direccion = "La dirección es obligatoria";
     if (!newEquipo.marca) formErrors.marca = "La marca es obligatoria";
-
+  
     return formErrors;
   };
-
+  
+  
   const handleFormSubmit = (e) => {
-    e.preventDefault(); // Evita que se recargue la página
+    e.preventDefault();
     const formErrors = validateFields();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
