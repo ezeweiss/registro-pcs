@@ -1,5 +1,5 @@
 import React from "react";
-import { TextField, InputAdornment } from "@mui/material";
+import { TextField, InputAdornment, Box } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear';
 
 const Buscador = ({ searchQuery, setSearchQuery }) => {
@@ -12,26 +12,27 @@ const Buscador = ({ searchQuery, setSearchQuery }) => {
   };
 
   return (
-    <TextField
-      label="Buscar"
-      variant="outlined"
-      fullWidth
-      value={searchQuery}
-      onChange={handleSearchChange}
-      sx={{ mb: 2 }}
-      InputProps={{
-        endAdornment: (
-          <InputAdornment position="end">
-            {searchQuery && (
-              <ClearIcon
-                onClick={handleClearClick}
-                sx={{ cursor: "pointer" }}
-              />
-            )}
-          </InputAdornment>
-        ),
-      }}
-    />
+    <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%", p: 2, pr: 5 }}>
+      <TextField
+        label="Buscar"
+        variant="outlined"
+        value={searchQuery}
+        onChange={handleSearchChange}
+        sx={{ width: 200, marginRight: "30px" }} // Ajusta este valor para moverlo más a la izquierda
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              {searchQuery && (
+                <ClearIcon
+                  onClick={handleClearClick}
+                  sx={{ cursor: "pointer" }}
+                />
+              )}
+            </InputAdornment>
+          ),
+        }}
+      />
+    </Box>
   );
 };
 

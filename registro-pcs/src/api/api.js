@@ -9,7 +9,6 @@ const MARCAS_URL = "http://localhost:5000/marcas"; // Suponiendo que esta sea la
 export const getEquipos = async () => {
   try {
     const response = await axios.get(API_URL);
-    console.log("Respuesta de la API:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error al obtener equipos:", error.response ? error.response.data : error.message);
@@ -21,7 +20,6 @@ export const getEquipos = async () => {
 export const getDirecciones = async () => {
   try {
     const response = await axios.get(DIRECCIONES_URL);
-    console.log("Respuesta de direcciones:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error al obtener direcciones:", error.response ? error.response.data : error.message);
@@ -33,7 +31,6 @@ export const getDirecciones = async () => {
 export const getMarcas = async () => {
   try {
     const response = await axios.get(MARCAS_URL);
-    console.log("Respuesta de marcas:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error al obtener marcas:", error.response ? error.response.data : error.message);
@@ -44,8 +41,6 @@ export const getMarcas = async () => {
 // Agregar un nuevo equipo
 export const addEquipo = async (equipo) => {
   try {
-    console.log("📤 Enviando equipo al backend:", JSON.stringify(equipo, null, 2));
-
     const response = await axios.post(API_URL, equipo);
     return response.data;
   } catch (error) {
