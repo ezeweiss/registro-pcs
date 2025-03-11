@@ -2,7 +2,7 @@ import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 
 const CustomSelect = ({ label, value, onChange, options }) => {
   const handleChange = (e) => {
-    const selectedValue = Number(e.target.value); // Convertir a número
+    const selectedValue = Number(e.target.value);
     console.log("✅ Nuevo valor seleccionado:", selectedValue);
     onChange(selectedValue);
   };
@@ -12,7 +12,7 @@ const CustomSelect = ({ label, value, onChange, options }) => {
       <InputLabel>{label}</InputLabel>
       <Select value={value} onChange={handleChange}>
         {options.map(option => (
-          <MenuItem key={option.id} value={option.id}> {/* Asegurar que el value sea numérico */}
+          <MenuItem key={option.id} value={option.id}>
             {option.nombre}
           </MenuItem>
         ))}
