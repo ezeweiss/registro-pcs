@@ -10,11 +10,18 @@ import {
   Paper,
   TableSortLabel,
   IconButton,
-  TablePagination
+  TablePagination,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  DialogActions,
+  Button
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Edit, Delete, Visibility } from "@mui/icons-material";
 import EliminarDialog from "../Dialog/EliminarDialog";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const TablaTelefonos = ({
   telefonos,
@@ -31,14 +38,20 @@ const TablaTelefonos = ({
   const [openDialog, setOpenDialog] = useState(false);
   const [telefonoAEliminar, setTelefonoAEliminar] = useState(null);
   const navigate = useNavigate(); 
-  const [currentPage, setCurrentPage] = useState(page);
   const [ipNoUsadas, setIpNoUsadas] = useState([]);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [selectedTelefono, setSelectedTelefono] = useState(null);
+  const [passwordCorrectTelefonos, setPasswordCorrectTelefonos] = useState({});
 
   useEffect(() => {
-    if (window.location.pathname === "/") {
-      setCurrentPage(0);
-    }
-  }, [window.location.pathname]);
+  }, [telefonos]);
+
+  // useEffect(() => {
+  //   if (window.location.pathname === "/") {
+  //     setCurrentPage(0);
+  //   }
+  // }, [window.location.pathname]);
 
   const handleSort = (key) => {
     if (key === "ip") {
@@ -111,6 +124,44 @@ const TablaTelefonos = ({
     cerrarDialogoEliminar();
   };
 
+
+  const abrirDialogoClave = (telefono) => {
+    setSelectedTelefono(telefono);
+    setPasswordDialogOpen(true);
+  };
+
+  const cerrarDialogoClave = () => {
+    setPasswordDialogOpen(false);
+    setPasswordInput("");
+  };
+
+  const handlePasswordSubmit = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/telefonos/${selectedTelefono.id}`, {
+        params: { clave: passwordInput },
+      });
+
+      if (response.status === 200) {
+        setPasswordCorrectTelefonos((prev) => ({
+          ...prev,
+          [selectedTelefono.id]: true,
+        }));
+        cerrarDialogoClave();
+      } else {
+        setPasswordCorrectTelefonos((prev) => ({
+          ...prev,
+          [selectedTelefono.id]: false,
+        }));
+      }
+    } catch (error) {
+      console.error("Error al verificar la clave", error);
+      setPasswordCorrectTelefonos((prev) => ({
+        ...prev,
+        [selectedTelefono.id]: false,
+      }));
+    }
+  };
+
   return (
     <><TableContainer component={Paper} sx={{ maxHeight: "70vh", overflowY: "auto" }}>
       <Table stickyHeader>
@@ -135,10 +186,42 @@ const TablaTelefonos = ({
             <TableRow key={telefono.id}>
               <TableCell>{telefono.ip}</TableCell>
               <TableCell>{telefono.interno}</TableCell>
-              <TableCell>{telefono.usuario}</TableCell>
-              <TableCell>{telefono.clave}</TableCell>
-              <TableCell>{telefono.sipUser}</TableCell>
-              <TableCell>{telefono.sipPassword}</TableCell>
+              <TableCell>
+                {passwordCorrectTelefonos[telefono.id] ? (
+                  <p>{telefono.usuario}</p>
+                ) : (
+                  <IconButton onClick={() => abrirDialogoClave(telefono)}>
+                    <Visibility />
+                  </IconButton>
+                )}
+              </TableCell>
+              <TableCell>
+                {passwordCorrectTelefonos[telefono.id] ? (
+                  <p>{telefono.clave}</p>
+                ) : (
+                  <IconButton onClick={() => abrirDialogoClave(telefono)}>
+                    <Visibility />
+                  </IconButton>
+                )}
+              </TableCell>
+              <TableCell>
+                {passwordCorrectTelefonos[telefono.id] ? (
+                  <p>{telefono.sipUser}</p>
+                ) : (
+                  <IconButton onClick={() => abrirDialogoClave(telefono)}>
+                    <Visibility />
+                  </IconButton>
+                )}
+              </TableCell>
+              <TableCell>
+                {passwordCorrectTelefonos[telefono.id] ? (
+                  <p>{telefono.sipPassword}</p>
+                ) : (
+                  <IconButton onClick={() => abrirDialogoClave(telefono)}>
+                    <Visibility />
+                  </IconButton>
+                )}
+              </TableCell>
               <TableCell>{telefono.sector}</TableCell>
               <TableCell>{telefono.numeroSerie}</TableCell>
               <TableCell>{telefono.mac}</TableCell>
@@ -161,12 +244,9 @@ const TablaTelefonos = ({
         component="div"
         count={telefonos.length}
         rowsPerPage={rowsPerPage}
-        page={currentPage}
-        onPageChange={(event, newPage) => {
-          setCurrentPage(newPage);
-          handleChangePage(event, newPage);
-        } }
-        onRowsPerPageChange={handleChangeRowsPerPage}
+        page={page}
+        onPageChange={(event, newPage) => handleChangePage(newPage)} 
+        onRowsPerPageChange={(event) => handleChangeRowsPerPage(event)}
         showFirstButton
         showLastButton
         siblingCount={1} />
@@ -175,6 +255,29 @@ const TablaTelefonos = ({
         openDialog={openDialog}
         cerrarDialogoEliminar={cerrarDialogoEliminar}
         confirmarEliminacion={confirmarEliminacion} />
+
+<Dialog open={passwordDialogOpen} onClose={cerrarDialogoClave}>
+        <DialogTitle>Ver Usuario/Clave</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Ingrese la clave"
+            type="password"
+            fullWidth
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
+            error={passwordInput && !passwordCorrectTelefonos[selectedTelefono?.id]}
+            helperText={passwordInput && !passwordCorrectTelefonos[selectedTelefono?.id] && "Clave incorrecta"}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cerrarDialogoClave} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={handlePasswordSubmit} color="primary" variant="contained">
+            Ver
+          </Button>
+        </DialogActions>
+      </Dialog>
     </TableContainer>
 </>
   );

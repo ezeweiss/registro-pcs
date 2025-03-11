@@ -4,8 +4,8 @@ import { Paper, Typography, Button, Grid} from "@mui/material";
 import { Add } from "@mui/icons-material";
 import { ordenarPorIp } from "../../api/ordenPorIP";
 import Buscador from "../Buscador/Buscador";
-import TablaEquipos from "../TablaEquipos/TablaEquipos";
-import FormEquipos from "../FormEquipos/FormEquipos";
+import TablaEquipos from "../Tablas/TablaEquipos";
+import FormEquipos from "../Forms/FormEquipos";
 import TablaIPNoUsadas from "../TablaIPNoUsadas/TablaIPNoUsadas";
 
 const Equipos = () => {

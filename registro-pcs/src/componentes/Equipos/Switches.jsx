@@ -3,8 +3,8 @@ import { getSwitches, addSwitch, updateSwitch, deleteSwitch } from "../../api/sw
 import { Paper, Typography, Button, Grid } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import Buscador from "../Buscador/Buscador";
-import TablaSwitches from "../TablaEquipos/TablaSwitches";
-import FormSwitches from "../FormEquipos/FormSwitches";
+import TablaSwitches from "../Tablas/TablaSwitches";
+import FormSwitches from "../Forms/FormSwitches";
 import { ordenarPorIp } from "../../api/ordenPorIP";
 
 const Switches = () => {

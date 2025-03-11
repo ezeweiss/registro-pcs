@@ -3,8 +3,8 @@ import { getTelefonos, addTelefono, updateTelefono, deleteTelefono } from "../..
 import { Paper, Typography, Button, Grid } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import Buscador from "../Buscador/Buscador";
-import TablaTelefonos from "../TablaEquipos/TablaTelefonos";
-import FormTelefonos from "../FormEquipos/FormTelefonos";
+import TablaTelefonos from "../Tablas/TablaTelefonos";
+import FormTelefonos from "../Forms/FormTelefonos";
 
 const Telefonos = () => {
   const [telefonos, setTelefonos] = useState([]);
@@ -28,7 +28,7 @@ const Telefonos = () => {
 
   useEffect(() => {
     setPage(0);
-  }, [searchQuery]);
+  }, [searchQuery, telefonos]);
 
   const fetchTelefonos = async () => {
     try {
@@ -39,19 +39,20 @@ const Telefonos = () => {
     }
   };
 
-  const filteredTelefonos = telefonos.filter(telefono => {
+  const filteredTelefonos = telefonos.filter((telefono) => {
     return (
-    telefono.ip.includes(searchQuery) ||
-    telefono.interno.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      telefono.usuario.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      telefono.clave.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      telefono.sipUser.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      telefono.sipPassword.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      telefono.sector.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      telefono.numeroSerie.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      telefono.mac.toLowerCase().includes(searchQuery.toLowerCase())
+      (telefono.ip || "").includes(searchQuery) ||
+      (telefono.interno || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (telefono.usuario || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (telefono.clave || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (telefono.sipUser || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (telefono.sipPassword || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (telefono.sector || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (telefono.numeroSerie || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (telefono.mac || "").toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
+  
 
   const handleOpenAgregar = (telefono = null) => {
     if (telefono) {
@@ -132,6 +133,7 @@ const Telefonos = () => {
         newTelefono={newTelefono}
         setNewTelefono={setNewTelefono}
         errors={errors}
+        setErrors={setErrors}
         telefonoOriginal={telefonoOriginal}
         telefonos ={telefonos}      />
     </Paper>
