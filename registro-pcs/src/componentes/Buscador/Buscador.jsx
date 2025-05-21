@@ -18,7 +18,7 @@ const Buscador = ({ searchQuery, setSearchQuery }) => {
         variant="outlined"
         value={searchQuery}
         onChange={handleSearchChange}
-        sx={{ width: 200, marginRight: "30px" }} // Ajusta este valor para moverlo más a la izquierda
+        sx={{ width: 200, marginRight: "30px" }}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">

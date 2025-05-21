@@ -1,11 +1,11 @@
 import axios from "axios";
 
-// URL de tu servidor backend
-const API_URL = "http://localhost:5000/equipos";
-const DIRECCIONES_URL = "http://localhost:5000/direcciones"; // Suponiendo que esta sea la URL para direcciones
-const MARCAS_URL = "http://localhost:5000/marcas"; // Suponiendo que esta sea la URL para marcas
 
-// Obtener todos los equipos
+const API_URL = "http://localhost:5000/equipos";
+const DIRECCIONES_URL = "http://localhost:5000/direcciones";
+const MARCAS_URL = "http://localhost:5000/marcas"; 
+
+
 export const getEquipos = async () => {
   try {
     const response = await axios.get(API_URL);
@@ -16,7 +16,7 @@ export const getEquipos = async () => {
   }
 };
 
-// Obtener todas las direcciones
+
 export const getDirecciones = async () => {
   try {
     const response = await axios.get(DIRECCIONES_URL);
@@ -27,7 +27,7 @@ export const getDirecciones = async () => {
   }
 };
 
-// Obtener todas las marcas
+
 export const getMarcas = async () => {
   try {
     const response = await axios.get(MARCAS_URL);
@@ -38,7 +38,7 @@ export const getMarcas = async () => {
   }
 };
 
-// Agregar un nuevo equipo
+
 export const addEquipo = async (equipo) => {
   try {
     const response = await axios.post(API_URL, equipo);
@@ -50,7 +50,7 @@ export const addEquipo = async (equipo) => {
 };
 
 
-// Actualizar un equipo
+
 export const updateEquipo = async (id, equipo) => {
   try {
     const response = await axios.put(`${API_URL}/${id}`, equipo);
@@ -61,7 +61,7 @@ export const updateEquipo = async (id, equipo) => {
   }
 };
 
-// Eliminar un equipo
+
 export const deleteEquipo = async (id) => {
   try {
     const response = await axios.delete(`${API_URL}/${id}`);

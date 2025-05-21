@@ -6,6 +6,7 @@ import NotFound from "./componentes/NotFound/NotFound";
 import Switches from "./componentes/Equipos/Switches";
 import Telefonos from "./componentes/Equipos/Telefonos";
 import Impresoras from "./componentes/Equipos/Impresoras";
+import Camaras from "./componentes/Equipos/Camaras";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/telefonos" element={<Telefonos />} />
         <Route path="/switches" element={<Switches />} />
         <Route path="/impresoras" element={<Impresoras />} />
+        <Route path="/camaras" element={<Camaras />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

@@ -12,7 +12,7 @@ const CustomSelect = ({ label, value, onChange, options }) => {
       <InputLabel>{label}</InputLabel>
       <Select value={value} onChange={handleChange}>
         {options.map(option => (
-          <MenuItem key={option.id} value={option.id}>
+          <MenuItem key={option.id} value={option.id}> 
             {option.nombre}
           </MenuItem>
         ))}
@@ -22,4 +22,5 @@ const CustomSelect = ({ label, value, onChange, options }) => {
 };
 
 export default CustomSelect;
+
 
